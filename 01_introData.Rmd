@@ -1,0 +1,117 @@
+---
+title: "Introducing the datasets (Topic 5)"
+author: "Ana Luisa Costa"
+date: "4/26/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/location/of/your/prism/data/in/your/laptop")
+```
+
+Check if the Prism files are in your directory
+```{r}
+list.files(full.names = T, pattern = ".rda")
+# this should return something like
+# [1] "./cellline_datasets.rda" "./prism_datasets.rda"   
+```
+
+### Loading the data
+
+Since the data is an RDA object, we need to load it using the *load* function. Let's start with the *prism_datasets* file. This file holds the information on the data we are using.
+
+```{r}
+load("./prism_datasets.rda")
+```
+
+We have 3 files inside this RDA object. 
+
+CL stands for cell line, and in *prism.cl* we have more information on the cell lines included. Treat indicates the treatments performed.\
+
+
+### Inspecting the prism_datasets data 
+
+In _prism.cl_, rows represent cells. Let's see many rows we have.
+```{r}
+nrow(prism.cl)
+```
+
+You can use *head()* to understand what is inside each data frame. In this one, you have information on all the cell lines included. Some of the columns seem a bit cryptic, but you are likely not using those (e.g. all of the columns which refer to literature search and accession IDs).\
+Other columns are more interesting. You can check the lineage of the cell line, its lineage subtype, and information about the donour.  
+```{r}
+head(prism.cl)
+```
+
+One of the most important fields is the **DepMap_ID**, as it is the unique identifier of the cells. You will need it to find information on cells of interest. Here is what these IDs look like. They will always start with the *ACH-* prefix.   
+```{r}
+prism.cl$DepMap_ID[1:10]
+```
+
+Let's see which and how many cells we have per lineage. This will be important for your sub-topics too.
+```{r}
+table(prism.cl$lineage)
+```
+
+Now let's inspect _prim.treat_. This data frame includes the information on the treatment used. 
+```{r}
+head(prism.treat)
+```
+The rownames here are a way to identify each drug/dose combination...
+
+
+...because, as you can see below, more than one dose of each treatment/drug was tested. We can check how many unique drug names are found:
+```{r}
+length(unique(prism.treat$name))
+```
+
+
+The _broad_id_ field is an ID for each drug. You can find the dose in the corresponding field and other meaningful information here, such as the drug's celular target and for which disease is it indicated to.  
+```{r}
+prism.treat$broad_id[1:10]
+```
+
+
+We have observed that we have 481 cell lines and 11,168 drug/dose combinations (treatments). So, the _prism_ data frame includes the effect of the treatment (columns) on cell growth of cell lines (rows). 
+```{r}
+head(prism)
+```
+
+
+### Inspecting the cellline_datasets data 
+
+Now let's see what we have inside the other RDA object. 
+```{r}
+load("./cellline_datasets.rda")
+```
+
+
+Here each of these dataframes is linked with the previous data on the cell lines (by the cell line IDs). We have CNV, Expression, and SNV data for the cells lines. This object contains data frames related to the cell line expression and genetic alterations, as well as the CRISPR/Cas9 knock-out data. 
+```{r}
+head(prism.exp)
+```
+
+In _prism.exp_, each row is a cell (remember the _ACH-_ prefix from before?). Each column represents a gene. Expression is represented as TPM (transcripts per million) 
+
+On the other hand, _prism.cnv_ includes gene copy number (CN) values by gene (column). Normally, CN is 2, since there are two alleles per genes. In cancer however, genes might be amplified CN > 2 or deleted CN < 2. 
+```{r}
+head(prism.cnv)
+```
+
+Next, we have SNV data. Here, you can see if a variant on a specific gene is deleterious or not.   
+```{r}
+head(prism.snv)
+```
+
+```{r}
+table(prism.snv$isDeleterious)
+```
+
+
+
+Lastly, we have _prism.achilles_, which consists of gene knockdown scores. The score is a measure of how essential/important is a particular gene for the cell survival. This score reflects whether upon knocking down that genes does the cell reduce its proliferation or increases it or has no change. Smaller values refers to higher essentiality. The rows of this matrix are the gene names and the columns are the cancer cell line identifiers.
+```{r}
+head(prism.achilles)
+```
+
+
