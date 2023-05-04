@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = "/location/of/your/prism/data/in/your/laptop")
+#knitr::opts_knit$set(root.dir = "/Users/aluisascosta/Documents/MoBi_datanalysis/MobiData")
 ```
 
 Check if the Prism files are in your directory
@@ -93,10 +94,27 @@ head(prism.exp)
 
 In _prism.exp_, each row is a cell (remember the _ACH-_ prefix from before?). Each column represents a gene. Expression is represented as TPM (transcripts per million) 
 
-On the other hand, _prism.cnv_ includes gene copy number (CN) values by gene (column). Normally, CN is 2, since there are two alleles per genes. In cancer however, genes might be amplified CN > 2 or deleted CN < 2. 
+
+On the other hand, _prism.cnv_ includes gene copy number variation (CNV) values by gene (column). Normally, CN is 2, since there are two alleles per genes. In cancer however, genes might be amplified (CN > 2) or deleted (CN < 2). The number in the _prism.cnv_ dataframe represents the ratio between the normal number of copies and the reference number of copies. This is why the number is almost always not a integer, but a float instead.     
 ```{r}
 head(prism.cnv)
 ```
+
+In a normal scenario, the CNV should be 1. It's common to use a so-called "noise filter" from which a gene is considered gained or lost. Let's use a noise filter of 0.2 and a random gene as an example. 
+```{r}
+hist(prism.cnv[,colnames(prism.cnv) == "DNMT1"], 
+     xlab = "CNV", 
+     main = "CNV of DNMT1", breaks = 100); abline(v=c(0.8,1.2),lty=3,lwd=2,col="orange")
+```
+
+Nevertheless, some genes are found to be more often altered than others. Let's take *EGFR* for example, as it is very commonly amplified in glioblastoma and other cancers. 
+```{r}
+hist(prism.cnv[,colnames(prism.cnv) == "EGFR"], 
+     xlab = "CNV", 
+     main = "CNV of EGFR", breaks = 100); abline(v=c(0.8,1.2),lty=3,lwd=2,col="orange")
+```
+Here you can see the trend looks different. 
+
 
 Next, we have SNV data. Here, you can see if a variant on a specific gene is deleterious or not.   
 ```{r}
